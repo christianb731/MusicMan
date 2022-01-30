@@ -1,0 +1,12 @@
+{
+  'format': 'bestaudio/best',
+  'extractaudio' : True,  # only keep the audio
+  'audioformat' : "mp3",  # convert to mp3 
+  #'outtmpl': '%(id)s',    # name the file the ID of the video
+  'noplaylist' : True,    # only download single song, not playlist
+  'outtmpl' :'%USERPROFILE%\Documents\discord bot\cache\\'+ '%(title)s' + '.mp3',
+  #'postprocessors': [{
+   #     'key': 'FFmpegExtractAudio',
+  #      'preferredcodec': 'mp3'
+ # }],
+}
