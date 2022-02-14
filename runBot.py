@@ -19,7 +19,7 @@ try:
     client.load_extension('cogs.startupCommands')
     client.load_extension('cogs.musicMan')
     print("Successfully loaded Cogs")
-except Exception as e:
+except ModuleNotFoundError as e:
     print(e)
 
 #Trying to figure out how to add cogs to the bot

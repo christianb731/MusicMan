@@ -7,7 +7,6 @@ from discord.ext import commands
 from discord.ext.commands.errors import CommandInvokeError
 from discord.player import FFmpegPCMAudio
 # -*- coding: utf-8 -*-
-
 # optionFile = open("cogs/options.txt", "r").readline()
 
 ##Instatiate empty options
@@ -35,8 +34,9 @@ options = {
 class musicMan(commands.Cog):
     """Bot commands for playing music."""
     classDownloaderList = []
-    isPlaying = asyncio.Event()
-    isPlaying.set()
+    hasNext = asyncio.Event()
+    notPlaying = asyncio.Event()
+    notPlaying.set()
     current_song = ""
     url_downloader = YTDL(options)
     hasPlayer = False
@@ -92,16 +92,16 @@ class musicMan(commands.Cog):
             try:               
                 self.url_downloader.download_and_get_info(url, search)
                 self.url_downloader.queue.add_song(self.url_downloader.video_title)
+                self.hasNext.set()
                 await ctx.send("Song added to queue.")
             except PermissionError:
                 try:
                     self.url_downloader.queue.add_song(self.url_downloader.video_title)
+                    self.hasNext.set()
                     await ctx.send("Song added to queue.")
                 except CommandInvokeError:
                     print(CommandInvokeError)              
             if(not self.hasPlayer):
-                print("Here")
-                                        #Bot literally takes too long and disconnects before this can happen
                 await self.player(voice)
                     
                     
@@ -117,56 +117,53 @@ class musicMan(commands.Cog):
         
     @commands.command(pass_context=True)
     async def volume(self, ctx, *args):
-        if len(args) == 0:
-            await ctx.send("Enter a volume.")
-        else:
-            try:    
-                input_volume = int(args[0])
-                if(input_volume < 0 or input_volume > 100):
-                    await ctx.send("Enter a volume between 0 and 100.")
-                else:
-                    new_volume = input_volume * .01
-                    voice = ctx.voice_client
-                    voice.source = discord.PCMVolumeTransformer(voice.source, volume = new_volume)
-            except ValueError:
-                await ctx.send("Enter a number between 0 and 100.")            
-                       
+        try:
+            if len(args) == 0:
+                await ctx.send("Enter a volume.")
+            else:
+                try:    
+                    input_volume = int(args[0])
+                    if(input_volume < 0 or input_volume > 100):
+                        await ctx.send("Enter a volume between 0 and 100.")
+                    else:
+                        new_volume = input_volume * .01
+                        voice = ctx.voice_client
+                        voice.source = discord.PCMVolumeTransformer(voice.source, volume = new_volume)
+                except ValueError:
+                    await ctx.send("Enter a number between 0 and 100.")            
+        except Exception:
+            await ctx.send("Bot is not playing.")
+                          
     @commands.command(pass_context=True)
     async def skip(self, ctx):
         """Skips current song in queue."""
         voice = ctx.voice_client
         voice.stop()
-        self.isPlaying.set()
         await ctx.send(self.current_song + " Skipped.")
                  
     async def player(self, voice):
         """Contains the voice player object from Discord.py.\n
-        Runs forever and sets hasPlayer to true until the last song in the queue is played, which sets it to false 
-        and breaks the loop. """
+        A loop that runs for as long as the program is running and waits for itself to stop playing to play the next song. \n
+        Also waits for the queue to not be empty to attempt to play the next song in the queue."""
         while (True):
-            await self.isPlaying.wait()
+            await self.notPlaying.wait()
+            await self.hasNext.wait()
             self.hasPlayer = True
-            self.isPlaying.clear()
-            
-            current_queue = self.url_downloader.queue.get_queue()          
-            video_title = current_queue[0]
-            self.current_song = video_title
-            
-            source = FFmpegPCMAudio('cache\\' + video_title + '.mp3')
-            
-            voice.play(source, after=lambda e: self.isPlaying.set())
-            self.url_downloader.queue.next_song()
-            
-            print("Playing " + video_title)
-            if(not self.url_downloader.queue.has_next()):
-                await self.isPlaying.wait()
-                if(not self.url_downloader.queue.has_next()):   #this looks silly but i think it is not
-                    break
-        self.hasPlayer = False
+            current_queue = self.url_downloader.queue.get_queue()      
+            if(len(current_queue) > 0):       
+                video_title = current_queue[0]
+                self.current_song = video_title
+                source = FFmpegPCMAudio('cache\\' + video_title + '.mp3')
+                voice.play(source, after=lambda e: self.notPlaying.set())
+                self.notPlaying.clear()
+                self.url_downloader.queue.next_song()
+                print("Playing " + video_title)
+            else:
+                self.hasNext.clear()
 
 
 #priority
-#Migrate to nextcord and yt-dlp
-#No Priority TODO: Set up environment or local variable for music cache to make portable
+#Migrate to nextcord maybe
+#No Priority TODO: Setup.py soon
 def setup(bot):
     bot.add_cog(musicMan(bot))
