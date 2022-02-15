@@ -1,0 +1,5 @@
+discord.py==1.7.3
+ffmpeg==1.4
+ffmpeg_python==0.2.0
+requests==2.26.0
+yt_dlp==2022.2.4

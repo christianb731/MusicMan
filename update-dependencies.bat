@@ -1,0 +1,2 @@
+cogs\update.py
+pause
