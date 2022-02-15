@@ -1,4 +1,3 @@
-
 from requests import get
 from cogs.cog_dependencies.Downloader import YTDL
 import discord
@@ -6,29 +5,14 @@ import asyncio
 from discord.ext import commands
 from discord.ext.commands.errors import CommandInvokeError
 from discord.player import FFmpegPCMAudio
-# -*- coding: utf-8 -*-
-# optionFile = open("cogs/options.txt", "r").readline()
-
-##Instatiate empty options
-# options ={}
-# Loop through options.txt and concantenate each line to String options
-# with open("cogs/options.txt", "r") as f:
-#     x = f.readlines()
-#     for y in x:
-#         options = options + y
 
 options = {
     'format': 'bestaudio/best',
     'extractaudio': True,  # only keep the audio
     'audioformat': "mp3",  # convert to mp3
-    # 'outtmpl': '%(id)s',    # name the file the ID of the video
     'noplaylist': True,  # only download single song, not playlist
     'outtmpl': '%USERPROFILE%\Documents\discord bot\cache\\' + '%(title)s' + '.mp3',
     'forceduration': True
-    # 'postprocessors': [{
-    #     'key': 'FFmpegExtractAudio',
-    #      'preferredcodec': 'mp3'
-    # }],
 }
 
 class musicMan(commands.Cog):
@@ -161,9 +145,5 @@ class musicMan(commands.Cog):
             else:
                 self.hasNext.clear()
 
-
-#priority
-#Migrate to nextcord maybe
-#No Priority TODO: Setup.py soon
 def setup(bot):
     bot.add_cog(musicMan(bot))
