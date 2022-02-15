@@ -11,7 +11,7 @@ options = {
     'extractaudio': True,  # only keep the audio
     'audioformat': "mp3",  # convert to mp3
     'noplaylist': True,  # only download single song, not playlist
-    'outtmpl': '%USERPROFILE%\Documents\discord bot\cache\\' + '%(title)s' + '.mp3',
+    'outtmpl': 'cache\\' + '%(title)s' + '.mp3',
     'forceduration': True
 }
 
